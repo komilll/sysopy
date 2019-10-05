@@ -1,0 +1,6 @@
+Czas O0: 2.136887s
+Czas O1: 0.316384s
+Czas O2: 0.380430s
+Czas O3: 0.126113s
+
+Nalezy uwazac na flagi poczawszy od O2, poniewaz zawieraja one domyslnie optymalizowanie nieuzywanych zmiennych. Bez wypisywania wyniku obliczen (uzywajac zmiennej "sum") czas dla O2/O3 byl bliski 0.00 sekundy, poniewaz kompilator pomijalal petle w swoich obliczeniach.
