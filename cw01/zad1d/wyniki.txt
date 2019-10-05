@@ -1,0 +1,6 @@
+Czas O0: 3.539637s
+Czas O1: 0.827328s
+Czas O2: 0.820746s
+Czas O3: 0.702977s
+
+Wyrazny skok wydajnosci widac od O1. Wynosi ok. x4 i nie zwieksza sie znacznie dla kolejnych flag optymalizacji. Moze byc to zwiazane z wektoryzacja petli for.

@@ -1,0 +1,6 @@
+Czas O0: 5.742078s
+Czas O1: 5.907266s
+Czas O2: 5.797666s
+Czas O3: 5.914221s
+
+Wygenerowany kod asemblera jest praktycznie taki sam, poniewaz uzywamy bardzo prostej funkcji "malloc" oraz petli for, ktora jest napisany w sposob uniemozliwiajacy wektoryzacje kodu. Z tego powodu, czasy wykonania dla roznych flag optymalizacji sa bardzo zblizone.

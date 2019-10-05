@@ -1,0 +1,6 @@
+Czas O0: 1.204360s
+Czas O1: 1.090000s
+Czas O2: 0.291413s
+Czas O3: 0.285613s
+
+Dane dla pliku zawierajacego 1000000 * 115 znakow, zapisywanego przy pomocy funkcji fprintf.
