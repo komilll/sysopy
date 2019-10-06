@@ -1,0 +1,5 @@
+static:  1.127396s
+shared:	 1.168931s
+dynamic: 1.159403s
+
+Widac, ze czasy ladowania biblioteki statycznej sa szybsze niz dla biblioteki wspoldzielonej lub dynamicznej. Roznica miedzy biblioteka wspoldzielona i dynamiczna jest niewielka, zwlaszcza dla tego konkretnego przypadku, gdzie sama biblioteka ma male rozmiary. Ciezko na podstawie tylko tych danych okreslic jednoznacznie, ktory z tych dwoch sposob jest szybszy.
