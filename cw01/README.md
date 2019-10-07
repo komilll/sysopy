@@ -1,8 +1,8 @@
-Czas wykonania: ~10h
+<b>Czas wykonania:</b> ~10h
 
-Największa trudność: obsługa biblioteki współdzielonej
+<b>Największa trudność:</b> obsługa biblioteki współdzielonej
 
-Poziom: rozpacz
+<b>Poziom:</b> rozpacz
 
 ![CryMeRiver...](taiga.gif)
 
