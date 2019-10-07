@@ -1,5 +1,7 @@
 Czas wykonania: ~10h
+
 Największa trudność: obsługa biblioteki współdzielonej
+
 Poziom: rozpacz
 
 ![CryMeRiver...](taiga.gif)
