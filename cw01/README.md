@@ -1,3 +1,9 @@
+Czas wykonania: ~10h
+Największa trudność: obsługa biblioteki współdzielonej
+Poziom: rozpacz
+
+![CryMeRiver...](taiga.gif)
+
 <h1>Zarządzanie pamięcią, biblioteki, pomiar czasu</h1>
 
 <h3>Zadanie 1.  Kompilator, optymalizacja, pomiar czasu (50%)</h3>
