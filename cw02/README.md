@@ -1,10 +1,14 @@
-<b>Czas wykonania:</b> ~10h
+<b>Czas wykonania:</b> 12h-15h
 
-<b>Największa trudność:</b> obsługa biblioteki współdzielonej
+<b>Największa trudność:</b> dużo czytania dokumentacji, dołączania odpowiednich bibliotek, który czasami nie chcą współpracować (GNU / XOPEN_SOURCE).
 
-<b>Poziom:</b> rozpacz
+https://github.com/kaszperro/sysopy/tree/master/cw02 - Dobre rozwiązania, zwłaszcza z wykorzystanie wysokopoziomowych bibliotek. Możliwie krótki kod.
 
-![CryMeRiver...](taiga.gif)
+Warto spojrzeć na moje funkcje <b>formatDate</b> i <b>strmode</b>, żeby ułatwić sobie życie.
+
+<b>Poziom:</b> ok, ale nudne
+
+![OK.gif :|](ok.gif)
 
 <h1>Zadania - zestaw 2</h1>
 
