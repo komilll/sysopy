@@ -2,7 +2,7 @@
 
 <b>Największa trudność:</b> dużo czytania dokumentacji, dołączania odpowiednich bibliotek, który czasami nie chcą współpracować (GNU / XOPEN_SOURCE).
 
-https://github.com/kaszperro/sysopy/tree/master/cw02 - Dobre rozwiązania, zwłaszcza z wykorzystanie wysokopoziomowych bibliotek. Możliwie krótki kod.
+https://github.com/kaszperro/sysopy/tree/master/cw02 - Dobre rozwiązania, zwłaszcza z wykorzystaniem wysokopoziomowych bibliotek. Możliwie krótki kod.
 
 Warto spojrzeć na moje funkcje <b>formatDate</b> i <b>strmode</b>, żeby ułatwić sobie życie.
 
