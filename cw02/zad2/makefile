@@ -11,16 +11,18 @@ all:
 	ln -s $(TEST_FILE) $(TEST_FILE_SYM)	
 
 test_dir: clean all
-	./$(FILE_O_NAME) ./ '>' "18.10.2019 00:00:01" dir
-	./$(FILE_O_NAME) ./ '=' "18.10.2019 00:00:01" dir
-	./$(FILE_O_NAME) ./ '<' "18.10.2019 00:00:01" dir
-	./$(FILE_O_NAME) ~/Documents/ '<' "18.10.2019 12:25:00" dir
+	./$(FILE_O_NAME) ./ '>' "18.10.2019 18:21:01" dir
+	./$(FILE_O_NAME) ./ '=' "18.10.2019 18:21:01" dir
+	./$(FILE_O_NAME) ./ '<' "18.10.2019 18:21:01" dir
+	./$(FILE_O_NAME) ~/Documents/ '<' "18.10.2019 12:26:00" dir
+	./$(FILE_O_NAME) ~/Documents/ '>' "18.10.2019 12:26:00" dir
 
 test_nftw: clean all
-	./$(FILE_O_NAME) ./ '>' "18.10.2019 00:00:01" nftw
-	./$(FILE_O_NAME) ./ '=' "18.10.2019 00:00:01" nftw
-	./$(FILE_O_NAME) ./ '<' "18.10.2019 00:00:01" nftw
-	./$(FILE_O_NAME) ~/Documents/ '<' "18.10.2019 15:35:19" nftw
+	./$(FILE_O_NAME) ./ '>' "18.10.2019 18:21:01" nftw
+	./$(FILE_O_NAME) ./ '=' "18.10.2019 18:21:01" nftw
+	./$(FILE_O_NAME) ./ '<' "18.10.2019 18:21:01" nftw
+	./$(FILE_O_NAME) ~/Documents/ '<' "18.10.2019 12:26:00" nftw
+	./$(FILE_O_NAME) ~/Documents/ '>' "18.10.2019 12:26:00" nftw
 
 clean:
 	rm -f *.o *.a *.so *.s $(FILE_O_NAME) $(TEST_FILE) $(TEST_FILE_SYM)

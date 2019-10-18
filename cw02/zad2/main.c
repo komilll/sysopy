@@ -49,9 +49,11 @@ void getActualPath(const char* dir, char* filename, char* returnPath)
 
 int compareTime(time_t fileTime)
 {
-    int timeDiff = difftime(fileTime, modDateComp);
-    return (strcmp(&modDateType, "<") == 0 && timeDiff < 0) || (strcmp(&modDateType, ">") == 0 && timeDiff > 0)
-        || (strcmp(&modDateType, "=") == 0 && timeDiff == 0);
+    int timeDiff = difftime(modDateComp, fileTime);
+    timeDiff -= 3600;
+    // printf("Time diff: %d", timeDiff);
+    return (modDateType == '<' && timeDiff < 0) || (modDateType == '>' && timeDiff > 0)
+        || (modDateType == '=' && timeDiff == 0);
 }
 
 void printDirDataStat(const char* dirName)
@@ -100,11 +102,8 @@ int printDirDataNftw(const char* filename, const struct stat* stats, int fileFla
     if (S_ISDIR(stats->st_mode) || S_ISLNK(stats->st_mode) || !S_ISREG(stats->st_mode))
         return 0;
 
-    if (strcmp(&modDateType, "<") == 0 && stats->st_mtime < modDateComp)
-        printFileData(filename, stats);
-    else if (strcmp(&modDateType, ">") == 0 && stats->st_mtime > modDateComp)
-        printFileData(filename, stats);
-    else if (strcmp(&modDateType, "=") == 0 && stats->st_mtime == modDateComp)
+    //Try to print file data
+    if (compareTime(stats->st_mtime))
         printFileData(filename, stats);
 
     return 0;
@@ -145,6 +144,7 @@ int main(int argc, char* argv[])
     } else if (strcmp(argv[4], "dir") == 0){
         printDirDataStat(argv[1]);
     }
+    printf("\n");
 
     return 0;
 }
