@@ -24,9 +24,7 @@ char* strmode(mode_t mode, char* buf)
 {
     const char chars[] = "rwxrwxrwx";
     for (size_t i = 0; i < 9; i++)
-    {
         buf[i] = (mode & (1 << (8 - i))) ? chars[i] : '-';
-    }
     buf[9] = '\0';
     return buf;
 }
@@ -38,14 +36,6 @@ void printFileData(const char* filename, const struct stat* stats)
     printf("%s\n  last modification: %s", filename, formatDate(date, stats->st_mtime));
     printf("\n  size in bytes: %ld", stats->st_size);
     printf("\n  rights: %s\n", strmode(stats->st_mode, accessRights));
-    // char actualPath[PATH_MAX + 1]; 
-    // char* pathPtr = realpath(filename, actualPath);
-    // if (!pathPtr)
-    // {
-    //     printf("Failed to find real path: %d\n", errno);
-    //     exit(-1);
-    // }
-    // printf("\n  full path: %s\n", actualPath);
 }
 
 void getActualPath(const char* dir, char* filename, char* returnPath)
@@ -55,6 +45,13 @@ void getActualPath(const char* dir, char* filename, char* returnPath)
     strcpy(dirCopy, dir);
     strcat(returnPath, dirCopy);
     strcat(returnPath, filename);
+}
+
+int compareTime(time_t fileTime)
+{
+    int timeDiff = difftime(fileTime, modDateComp);
+    return (strcmp(&modDateType, "<") == 0 && timeDiff < 0) || (strcmp(&modDateType, ">") == 0 && timeDiff > 0)
+        || (strcmp(&modDateType, "=") == 0 && timeDiff == 0);
 }
 
 void printDirDataStat(const char* dirName)
@@ -85,12 +82,9 @@ void printDirDataStat(const char* dirName)
         }
 
         //Try to print file data
-        if (strcmp(&modDateType, "<") == 0 && stats.st_mtime < modDateComp)
+        if (compareTime(stats.st_mtime)){
             printFileData(actualPath, &stats);
-        else if (strcmp(&modDateType, ">") == 0 && stats.st_mtime > modDateComp)
-            printFileData(actualPath, &stats);
-        else if (strcmp(&modDateType, "=") == 0 && stats.st_mtime == modDateComp)
-            printFileData(actualPath, &stats);
+        }
 
         curFile = readdir(dir);
     }
@@ -106,9 +100,9 @@ int printDirDataNftw(const char* filename, const struct stat* stats, int fileFla
     if (S_ISDIR(stats->st_mode) || S_ISLNK(stats->st_mode) || !S_ISREG(stats->st_mode))
         return 0;
 
-    if (strcmp(&modDateType, ">") == 0 && stats->st_mtime < modDateComp)
+    if (strcmp(&modDateType, "<") == 0 && stats->st_mtime < modDateComp)
         printFileData(filename, stats);
-    else if (strcmp(&modDateType, "<") == 0 && stats->st_mtime > modDateComp)
+    else if (strcmp(&modDateType, ">") == 0 && stats->st_mtime > modDateComp)
         printFileData(filename, stats);
     else if (strcmp(&modDateType, "=") == 0 && stats->st_mtime == modDateComp)
         printFileData(filename, stats);
@@ -123,47 +117,14 @@ int parseArguments(int argc, char* argv[])
     if (strcmp(argv[2], "<") || strcmp(argv[2], ">") || strcmp(argv[2], "="))
     {
         const char* date = argv[3];
-        if (strlen(date) != 19 && strlen(date) != 10)
-        {
+        if (strlen(date) != 19) {
             printf("Wrong date string length\n");
             return -2;
         }
-        if (strlen(date) == 19){
-            if (date[2] != '.' || date[5] != '.' || date[10] != ' ' || date[13] != ':' || date[16] != ':')
-            {
-                printf("Wrong params\n");
-                return -2;
-            }
-        }
-        if (strlen(date) == 10){
-            if (date[2] != '.' || date[5] != '.')
-            {
-                printf("Wrong params\n");
-                return -2;
-            }
-        }
+        const char format[] = "%d.%m.%Y %H:%M:%S";
         struct tm timeStruct;
-        char dayStr[] = {date[0], date[1]};
-        timeStruct.tm_mday = atoi(dayStr);
-
-        char monthStr[] = {date[3], date[4]};
-        timeStruct.tm_mon = atoi(monthStr) - 1;
-
-        char yearStr[] = {date[6], date[7], date[8], date[9]};
-        timeStruct.tm_year = atoi(yearStr);
-
-        if (strlen(date) == 19)
-        {
-            char hourStr[] = {date[11], date[12]};
-            timeStruct.tm_hour = atoi(hourStr);
-
-            char minuteStr[] = {date[14], date[15]};
-            timeStruct.tm_min = atoi(minuteStr);
-
-            char secondStr[] = {date[17], date[18]};
-            timeStruct.tm_sec = atoi(secondStr);
-        }
-        modDateComp = mktime(&timeStruct);
+        strptime(date, format, &timeStruct);
+        modDateComp = mktime(&timeStruct);        
     }
     else
     {
