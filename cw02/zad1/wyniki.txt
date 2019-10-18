@@ -1,0 +1,37 @@
+Widac, ze dla funkcji bibliotecznych sortowanie oraz kopiowanie przebiega wolniej niz w przypadku uzywania funkcji systemowych.
+Okazuje sie, ze sa one szybsze, jednak mniej wygodne w uzyciu, poniewaz korzystaja z mniejszej ilosci abstrakcji do reprezentacji danych. Dla niewielkiej ilosci danych i kopiowanie plikow kilkunasto/kilkudziesieciu kilobajtowych roznica nie powinna byc zauwazalna, zwlaszcza, gdy nie sa to operacje krytyczne.
+
+sort_sys size(4) record(100) time: 0.014117
+sort_lib size(4) record(100) time: 0.014685
+sort_sys size(4) record(1000) time: 1.318372
+sort_lib size(4) record(1000) time: 1.533393
+sort_sys size(512) record(100) time: 0.014902
+sort_lib size(512) record(100) time: 0.022755
+sort_sys size(512) record(1000) time: 1.450354
+sort_lib size(512) record(1000) time: 1.822667
+sort_sys size(4096) record(100) time: 0.019514
+sort_lib size(4096) record(100) time: 0.029812
+sort_sys size(4096) record(1000) time: 2.078001
+sort_lib size(4096) record(1000) time: 2.355471
+sort_sys size(8192) record(100) time: 0.025534
+sort_lib size(8192) record(100) time: 0.036701
+sort_sys size(8192) record(1000) time: 2.641489
+sort_lib size(8192) record(1000) time: 3.282435
+
+-Dla wiekszej liczby rekordow wystepowaly bledy z pamiecia, dlatego poprzestalem na testowaniu 1000 oraz 100000 rekordow:
+copy_sys size(4) record(1000) time: 0.000492
+copy_lib size(4) record(1000) time: 0.000434
+copy_sys size(4) record(100000) time: 0.037170
+copy_lib size(4) record(100000) time: 0.039791
+copy_sys size(512) record(1000) time: 0.001464
+copy_lib size(512) record(1000) time: 0.001592
+copy_sys size(512) record(100000) time: 0.157263
+copy_lib size(512) record(100000) time: 0.161949
+copy_sys size(4096) record(1000) time: 0.011830
+copy_lib size(4096) record(1000) time: 0.012283
+copy_sys size(4096) record(100000) time: 0.671109
+copy_lib size(4096) record(100000) time: 0.706877
+copy_sys size(8192) record(1000) time: 0.049874
+copy_lib size(8192) record(1000) time: 0.054888
+copy_sys size(8192) record(100000) time: 1.204067
+copy_lib size(8192) record(100000) time: 1.247984
