@@ -1,28 +1,59 @@
-<b>Czas wykonania:</b> Pierwsze zadanie - jeśli mamy już zrobione przeszukiwanie w głąb to całość sprowadza się do zrobienia <b>fork()</b>, wykonywania dalej w dziecku i czekaniu w rodzicu na zakończenie. Max 5min, jeśli jesteśmy odpowiednio przygotowani. Ok. 1h z przygotowaniem systemu do przeszukiwania w głąb
+<b>Czas wykonania:</b> 12h-15h
 
-<b>Największa trudność:</b> 
+<b>Największa trudność:</b> dużo czytania dokumentacji, dołączania odpowiednich bibliotek, który czasami nie chcą współpracować (GNU / XOPEN_SOURCE).
 
-https://github.com/kaszperro/sysopy/blob/master/cw03/zad1/main.c - Krótkie i przejrzyste rozwiązanie do zadania 1 (u siebie zostawiłem logi z cw02/zad2).
+https://github.com/kaszperro/sysopy/tree/master/cw02 - Dobre rozwiązania, zwłaszcza z wykorzystaniem wysokopoziomowych bibliotek. Możliwie krótki kod.
 
-<b>Poziom:</b> -
+Warto spojrzeć na moje funkcje <b>formatDate</b> i <b>strmode</b>, żeby ułatwić sobie życie.
 
-<h1>Tworzenie procesów. Środowisko procesu, sterowanie procesami.</h1>
+<b>Poziom:</b> ok, ale nudne
 
-<h3>Zadanie 1. (40%)</h3>
+![OK.gif :|](ok.gif)
 
-Zmodyfikuj zadanie 2 z poprzedniego zestawu w taki sposób, iż przeszukiwanie w każdym z odnalezionych (pod)katalogow powinno odbywać sie w osobnym procesie.
+<h1>Zadania - zestaw 2</h1>
 
-<h3>Zadanie 2. Prosty interpreter zadań wsadowych (60%)</h3>
+<h3>Zadanie 1. Porównanie wydajności systemowych i bibliotecznych funkcji we/wy (55%)</h3>
 
-W ramach ćwiczenia należy napisać prosty interpreter zadań wsadowych. Interpreter przyjmuje w argumencie nazwę pliku zawierającego zadanie wsadowe i wykonuje wszystkie polecenia z tego pliku. Polecenia w pliku wsadowym maja postac: 
+<li>(30%) Celem zadania jest napisanie programu porównującego wydajność systemowych i bibliotecznych funkcji wejścia/wyjścia. Program operował będzie na przechowywanej w pliku tablicy rekordów. Dla uproszczenia pojedynczy rekord będzie tablicą bajtów o stałej wielkości. Nazwa pliku, wielkość oraz ilość rekordów stanowić będą argumenty wywołania programu.
 
+<b>Program udostępniać powinien operacje:</b>
 
-NazwaProgramu arg1 arg2 ...
+-generate - tworzenie pliku z rekordami wypełnionego wygenerowaną losową zawartością (można wykorzystać wirtualny generator /dev/random lub w wersji uproszczonej funkcję rand)
 
-co oznacza, że należy wykonać program o nazwie NazwaProgramu z argumentami: arg1, arg2, ...
-Na przykład, linia postaci:
-ls -l
-powinna spowodować wykonanie programu ls z argumentem -l. Lista argumentów może być pusta - wówczas program wykonywany jest bez argumentów. W zadaniu można również przyjąć górne ograniczenie na liczbę argumentów.
+-sort - sortuje rekordy w pliku używając sortowania przez proste wstawianie. Kluczem do sortowania niech będzie wartość pierwszego bajtu rekordu (interpretowanego jako liczba bez znaku - unsigned char) Podczas sortowania w pamięci powinny być przechowywane jednocześnie najwyżej dwa rekordy (sprowadza się do zamieniania miejscami i porównywania dwóch rekordów).
 
-Interpreter musi wykonywać polecenia w osobnych procesach. W tym celu, po odczytaniu polecenia do wykonania interpreter tworzy nowy proces potomny. Proces potomny natychmiast wykonuje odpowiednią funkcję z rodziny exec, która spowoduje uruchomienie wskazanego programu z odpowiednimi argumentami. Uwaga: proces potomny powinien uwzględniać zawartość zmiennej środowiskowej PATH - polecenie do wykonania nie musi obejmować ścieżki do uruchamianego programu, jeśli program ten znajduje się w katalogu wymienionym w zmiennej PATH.
-Po stworzeniu procesu potomnego, proces interpretera czeka na jego zakończenie i odczytuje status zakończenia. Jeśli proces zakończył się ze statusem 0 interpreter przystępuje do wykonania kolejnej linii pliku wsadowego. W przeciwnym wypadku interpreter wyświetla komunikat o błędzie i kończy pracę. Komunikat ten powinien wskazywać, które polecenie z pliku wsadowego zakończyło się błędem. Zakładamy, że polecenia z pliku wsadowego nie oczekują na żadne wejście z klawiatury. Mogą natomiast wypisywać wyjście na ekran.
+-copy - kopiuje plik1 do pliku2. Kopiowanie powinno odbywać się za pomocą bufora o zadanej wielkości rekordu.
+
+<b>Sortowanie i kopiowanie powinno być zaimplementowane w dwóch wariantach:</b>
+
+-sys - przy użyciu funkcji systemowych: read i write
+
+-lib - przy użyciu funkcji biblioteki C: fread i fwrite
+
+<b>Rodzaj operacji oraz sposób dostępu do plików ma być wybierany na podstawie argumentu wywołania - np.:</b>
+
+./program generate dane 100 512 powinno losowo generować 100 rekordów o długości 512 bajtów do pliku dane,
+
+./program sort dane 100 512 sys powinien sortować rekordy w pliku dane przy użyciu funkcji systemowych, zakładając że zawiera on 100 rekordów wielkości 512 bajtów
+
+./program copy plik1 plik2 100 512 sys powinno skopiować 100 rekordów pliku 1 do pliku 2 za pomocą funkcji bibliotecznych z wykorzystaniem bufora 512 bajtów
+
+<li>(25%) Dla obu wariantów implementacji przeprowadź pomiary czasu użytkownika i czasu systemowego operacji sortowania i kopiowania. Testy wykonaj dla następujących rozmiarów rekordu: 4, 512, 4096 i 8192 bajty. Dla każdego rozmiaru rekordu wykonaj dwa testy różniące się liczbą rekordów w sortowanym pliku. Liczby rekordów dobierz tak, by czas sortowania mieścił się w przedziale od kilku do kilkudziesięciu sekund. Porównując dwa warianty implementacji należy korzystać z identycznego pliku do sortowania (po wygenerowaniu, a przed sortowaniem, utwórz jego kopię). Zmierzone czasy zestaw w pliku wyniki.txt. Do pliku dodaj komentarz podsumowujący wnioski z testów.
+
+<h3>Zadanie 2. Operacje na strukturze katalogów (45%)</h3>
+
+Napisz program wyszukujący w drzewie katalogu (ścieżka do katalogu jest pierwszym argumentem programu), w zależności od wartości drugiego argumentu ('<', '>','=') , pliki zwykłe z datą modyfikacji wcześniejszą, późniejszą lub równą dacie podanej jako trzeci argument programu. Program ma wypisać na standardowe wyjście następujące informacje znalezionych plików:
+
+<li>ścieżka bezwzględna pliku
+<li>rozmiar w bajtach
+<li>prawa dostępu do pliku (w formacie używanym przez ls -l, np. r--r--rw- oznacza prawa odczytu dla wszystkich i zapisu dla właściciela)
+<li>datę ostatniej modyfikacji
+
+Ścieżka podana jako argument wywołania może być względna lub bezwzględna. Program powinien wyszukiwać tylko pliki zwyczajne (bez dowiązań, urządzeń blokowych, itp). Program nie powinien podążać za dowiązaniami symbolicznymi do katalogów.
+
+Program należy zaimplementować w dwóch wariantach:
+
+<li>Korzystając z funkcji opendir, readdir oraz funkcji z rodziny stat (25%)
+<li>Korzystając z funkcji nftw (20%)
+
+W ramach testowania funkcji utwórz w badanej strukturze katalogów jakieś dowiązania symboliczne.
