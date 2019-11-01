@@ -1,0 +1,11 @@
+ls -l
+touch test.txt
+cd .
+dir
+echo
+echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+echo 	It seems to be working fine	
+echo 	Let's CRASH IT with next command	
+echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+echo
+mkdir ./NON_EXISTING_DIR/WILL_CRASH

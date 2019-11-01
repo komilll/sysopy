@@ -59,14 +59,40 @@ int compareTime(time_t fileTime)
         || (modDateType == '=' && timeDiff == 0);
 }
 
+int parseArguments(int argc, char* argv[])
+{
+    modDateType = argv[2][0];
+
+    if (strcmp(argv[2], "<") || strcmp(argv[2], ">") || strcmp(argv[2], "="))
+    {
+        const char* date = argv[3];
+        if (strlen(date) != 19) {
+            printf("Wrong date string length\n");
+            return -2;
+        }
+        const char format[] = "%d.%m.%Y %H:%M:%S";
+        struct tm timeStruct;
+        strptime(date, format, &timeStruct);
+        modDateComp = mktime(&timeStruct);        
+    }
+    else
+    {
+        printf("Second argument is wrong. Type '<', '>' or '='\n");
+        return -2;
+    }
+    return 0;
+}
+
 void printDirDataStat(const char* dirName)
 {
+    //Open pointed directory
     DIR* dir = opendir(dirName);
     if (!dir){
         printf("Directory couldn't be openned\n");
         exit(-1);
     }
 
+    //Prepare structs for holding info and new file paths
     struct dirent* curFile = readdir(dir);
     struct stat stats;
     char actualPath[PATH_MAX + 1]; 
@@ -129,30 +155,6 @@ void printDirDataStat(const char* dirName)
         printf("Directory didn't closed properly\n");
         exit(-1);
     }    
-}
-
-int parseArguments(int argc, char* argv[])
-{
-    modDateType = argv[2][0];
-
-    if (strcmp(argv[2], "<") || strcmp(argv[2], ">") || strcmp(argv[2], "="))
-    {
-        const char* date = argv[3];
-        if (strlen(date) != 19) {
-            printf("Wrong date string length\n");
-            return -2;
-        }
-        const char format[] = "%d.%m.%Y %H:%M:%S";
-        struct tm timeStruct;
-        strptime(date, format, &timeStruct);
-        modDateComp = mktime(&timeStruct);        
-    }
-    else
-    {
-        printf("Second argument is wrong. Type '<', '>' or '='\n");
-        return -2;
-    }
-    return 0;
 }
 
 int main(int argc, char* argv[])
