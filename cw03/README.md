@@ -12,7 +12,7 @@ Drugie zadanie - 1h-1.5h
 <li>https://github.com/Busiu/Operating_Systems/blob/4c1f946184a66c9bbb4e1e5c4831cee5fdd3f9ce/cw03/Zad2/main.c - Zadanie 2 - przejrzyste, z komentarzami
 </ul>
 
-<b>Poziom:</b> uśmiech małych lolitek
+<b>Poziom:</b> uśmiech słodkich dziewczynek
 
 ![shinobu.gif](shinobu.gif)
 
