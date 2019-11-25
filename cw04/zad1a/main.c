@@ -29,21 +29,25 @@ void handleConsoleStop(int sigNum)
 
 int main(int argc, char* argv[])
 {
+    //Time stuctues
     time_t rawTime;
     struct tm *timeInfo;
 
+    //Create action for signal - SIGTSTP
     struct sigaction action;
     action.sa_flags = 0;
     sigemptyset(&action.sa_mask);
     action.sa_handler = handleConsoleStop;
-
-    signal(SIGINT, handleConsoleInterupt);
     sigaction(SIGTSTP, &action, NULL);
+
+    //Create action for signal - SIGINT
+    signal(SIGINT, handleConsoleInterupt);
 
     while (1)
     {
         if (continuePrint)
         {
+            //Continue printing time
             time(&rawTime);
             timeInfo = localtime(&rawTime);
             printf("Current time: %s", asctime(timeInfo));

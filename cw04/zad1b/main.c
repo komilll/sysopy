@@ -14,25 +14,17 @@ void handleConsoleStop(int sigNum);
 
 pid_t createProcess()
 {
+    //Create child process
     pid_t pid = fork();
     if (pid < 0){
         printf("Fatal error, program termination\n");
         exit(-1);
     } else if (pid == 0) {
+        //Continue printing date in console in child
         while (1)
-        {
             system("date");
-        }
-    } 
-    // else {
-    //     int returnVal = 0;
-    //     wait(&returnVal);  
-    //     if (returnVal != 0){            
-    //         exit(-1);
-    //     }      
-    // }
-    else
-    {
+    } else {
+        //Return chil process id to use it later
         return pid;
     }
     
@@ -57,39 +49,40 @@ void handleConsoleInterupt(int sigNum)
 
 void handleConsoleStop(int sigNum)
 {
-    if (savedPID == -1)
-    {
+    if (savedPID == -1){
+        //Child process - ignore signal
         return;
     }
+
     if (continuePrint)
     {
+        //Stopped printing - kill child process
         printf("\nOczekuje na CTRL+Z - kontynuacja albo CTRL+C - zakonczenie programu\n");
         kill(savedPID, SIGKILL);
         continuePrint = 0;
     }
     else
     {
+        //Started printing - create child process
         savedPID = createProcess();
         continuePrint = 1;
     }
-    registerStpHandler();
-    sigset_t mask;
-    sigemptyset(&mask);
-    sigaddset(&mask, SIGTSTP);
-    sigprocmask(SIG_UNBLOCK, &mask, 0);
 }
 
 int main(int argc, char* argv[])
 {
+    //Register handler and create first child
     registerStpHandler();
     savedPID = createProcess();
     if (savedPID != -1)
     {
+        //Prepare interupt signal handler for parent process
         signal(SIGINT, handleConsoleInterupt);
 
+        //And wait for signals
         while (1)
         {
-            // sleep(1);
+            pause();
         }
     }
 

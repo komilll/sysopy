@@ -11,66 +11,68 @@ char** readLine(FILE* file, int index, char commandBuffer[200], int maxCount);
 
 void executeLine(FILE* file, int lineCommandCount, char** commands)
 {
-    int pipes[lineCommandCount][2];
-    for (int i = 0; i < lineCommandCount; ++i){
-        if (pipe(pipes[i]) < 0){
-            printf("Failed to pipe program!");
-            exit(-1);
-        }
-    }
+    //Prepare pipe arrays
+    int pipesPrev[2] = {0,0};
+    int pipesCurr[2] = {0,0};
+    int childPIDs[maxProgramCount];
 
     for (int i = 0; i < lineCommandCount; ++i)
     {
-        printf("\n");
+        if (pipe(pipesCurr) < 0){
+            printf("Failed to pipe program!");
+            exit(-1);
+        }
+
         //Fork process to call new program
         pid_t pid = fork();
+        childPIDs[i] = pid;
         if (pid < 0){
             printf("Fatal error, couldn't create process\n");
             exit(-1);
         } else if (pid == 0){
+            //Prepare arguments
             char commandBuffer[200];
             strcpy(commandBuffer, commands[i]);
             char** arguments = readLine(file, i, commandBuffer, lineCommandCount);
 
             //Not first? Read previous data
             if (i > 0){
-                close(pipes[i - 1][1]);
-                if (dup2(pipes[i - 1][0], STDIN_FILENO) < 0){
-                    exit(-1);
-                }
+                dup2(pipesPrev[0], STDIN_FILENO);
+                close(pipesPrev[1]);
+                close(pipesPrev[0]);
             }
             //Not last? Write next data
             if (i + 1 < lineCommandCount){
-                close(pipes[i][0]);
-                if (dup2(pipes[i][1], STDOUT_FILENO) < 0){
-                    exit(-1);
-                }
+                dup2(pipesCurr[1], STDOUT_FILENO);
+                close(pipesCurr[0]);
+                close(pipesCurr[1]);
             }
 
             //Call new program with parsed arguments
             execvp(arguments[0], arguments);
             exit(0);
+        } else {
+            if (i > 0){
+                close(pipesPrev[0]);
+                close(pipesPrev[1]);
+            }
+            if (i + 1 < lineCommandCount){
+                pipesPrev[0] = pipesCurr[0];
+                pipesPrev[1] = pipesCurr[1];
+            }
         }
-        
     }
-
-    for (int i = 0; i < lineCommandCount - 1; ++i) {
-        close(pipes[i][0]);
-        close(pipes[i][1]);
+    
+    //Wait until all processes in line are finished
+    int retStatus = 0;
+    for (int i = 0; i < lineCommandCount; ++i){
+        waitpid(childPIDs[i], &retStatus, 0);
     }
-
-    // for (int i = 0; i < lineCommandCount; ++i) {
-        wait(0);
-    // }
 }
 
 char** readLine(FILE* file, int index, char commandBuffer[200], int maxCount)
 {
     char* buffer[maxArgumentCount];
-
-    // strcpy(commandBuffer, commands[index]);
-    //Program name in [0] array position
-    // printf("BBB: %s\n", commandBuffer);
     buffer[0] = strtok(commandBuffer, " ");
     
     //Continue to read arguments
@@ -91,7 +93,6 @@ char** readLine(FILE* file, int index, char commandBuffer[200], int maxCount)
     }
     arguments[i] = NULL;
 
-    printf("\n #%d -> Try to execute: >%s< with argument: %s : %s\n", index, buffer[0], buffer[1], buffer[2]);
     return arguments;
 }
 
@@ -108,13 +109,15 @@ void readFile(const char* filename)
     char lineBuffer[1000];
     char* commands[maxProgramCount];
 
+    //Read line by line
     int commandCounter = 0;
     while ((fgets(lineBuffer, 1000, file)) != NULL){
         commandCounter = 0;
+        //Get all commands from line
         while ((commands[commandCounter] = strtok(commandCounter == 0 ? lineBuffer : NULL, "|")) != NULL){
             commandCounter++;
-            // printf("AAA: %s\n", commands[commandCounter-1]);
         }
+        //Execute those commands
         executeLine(file, commandCounter, commands);
     }
 }

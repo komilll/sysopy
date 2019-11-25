@@ -1,1 +1,2 @@
-ls -l | grep ma
+ls -l | grep ma | head -n 2
+ps -a | sort | grep pts | grep ma | head -n 3
