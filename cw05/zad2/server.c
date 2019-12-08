@@ -118,6 +118,7 @@ void closeQueueAtExit()
             printf("Failed to kill client: %d\n", i);
         }
     }
+    activeClients = 0;
 
     if (queueID != -1){
         if (mq_close(queueID) == -1){
@@ -134,7 +135,7 @@ void int_handler()
 {
     //Cleanup at console interuption
     closeQueueAtExit();
-    // exit(-1);
+    exit(-1);
 }
 
 int main(int argc, char* argv[])

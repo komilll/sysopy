@@ -68,6 +68,7 @@ void closeQueueAtExit()
         if (msgctl(clientConnectionID, IPC_RMID, NULL) == -1){
             printf("Failed to delete queue at exit in client\n");        
         }
+        clientConnectionID = -1;
     }
 }
 

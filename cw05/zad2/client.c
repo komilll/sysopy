@@ -81,7 +81,7 @@ void int_handler()
 {
     //Cleanup at interruption
     closeQueueAtExit();
-    // exit(-1);
+    exit(-1);
 }
 
 int main(int argc, char* argv[])

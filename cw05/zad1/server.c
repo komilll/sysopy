@@ -124,6 +124,7 @@ void closeQueueAtExit()
         if (msgctl(queueID, IPC_RMID, NULL) == -1){
             printf("Failed to delete queue at exit in server\n");        
         }
+        queueID = -1;
     }
 }
 
