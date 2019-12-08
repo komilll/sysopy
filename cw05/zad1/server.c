@@ -18,6 +18,81 @@ int createServerQueue()
     return msgget(getServerKey(), IPC_CREAT | IPC_EXCL | 0666);
 }
 
+void processStartCommand(message *msg)
+{
+    //Increase client counter
+    activeClients++;
+    if (activeClients > MAX_CLIENTS){
+        printf("Max client count reached! Close server\n");
+        exit(-1);
+    }
+
+    //Prepare client connection
+    key_t clientKey;
+    sscanf(msg->mtext, "%d", &clientKey);
+    int id = msgget(clientKey, 0);
+    clientConnectionIDs[activeClients] = id;
+    clientKeys[activeClients] = clientKey;
+    if (id <= 0){
+        printf("Failed to get correct id on start\n");
+        printf("errno: %s\n", strerror(errno));
+        exit(-1);
+    }
+
+    //Prepare accept connection message
+    message newMsg;
+    newMsg.mtype = START;
+    newMsg.senderPID = getpid();
+    sprintf(newMsg.mtext, "%d", activeClients);
+
+    //Send message openning client-server private connection
+    if (msgsnd(id, &newMsg, MESSAGE_SIZE, 0) == -1){
+        printf("Failed to send message to client\n");
+        printf("errno: %s\n", strerror(errno));
+        exit(-1);
+    }
+}
+
+void processTimeCommand(message *msg)
+{
+    //Get client key
+    key_t key;
+    sscanf(msg->mtext, "%d", &key);
+    int clientID = -1;
+
+    //Find client ID in array
+    for (int i = 0; i < MAX_CLIENTS; i++){
+        if (key == clientKeys[i]){
+            clientID = i;
+            break;
+        }
+    }
+
+    //Error - client not found
+    if (clientID == -1){
+        printf("Failed to find client who requested command\n");
+        exit(-1);
+    }
+
+    //Prepare message
+    message newMsg;
+    newMsg.mtype = TIME;
+    newMsg.senderPID = getpid();
+
+    //Prepare time
+    time_t rawTime;
+    struct tm* timeInfo;
+    time(&rawTime);
+    timeInfo = localtime(&rawTime);
+    sprintf(newMsg.mtext, "%s", asctime(timeInfo));
+
+    //Send message to client who requested time
+    if (msgsnd(clientConnectionIDs[clientID], &newMsg, MESSAGE_SIZE, 0) == -1){
+        printf("Client of id: %d has closed queue connection\n", clientID);
+        return;
+    }
+}
+
 void processReceivedMessages(message *msg)
 {
     //No message was passed, ignore
@@ -26,65 +101,15 @@ void processReceivedMessages(message *msg)
     }
 
     if (msg->mtype == TIME){
-        key_t key;
-        int clientID = -1;
-        sscanf(msg->mtext, "%d", &key);
-
-        for (int i = 0; i < MAX_CLIENTS; i++){
-            if (key == clientKeys[i]){
-                clientID = i;
-                break;
-            }
-        }
-
-        if (clientID == -1){
-            return;
-        }
-
-        message newMsg;
-        newMsg.mtype = TIME;
-        newMsg.senderPID = getpid();
-
-        time_t rawTime;
-        struct tm* timeInfo;
-        time(&rawTime);
-        timeInfo = localtime(&rawTime);
-        sprintf(newMsg.mtext, "%s", asctime(timeInfo));
-
-        if (msgsnd(clientConnectionIDs[clientID], &newMsg, MESSAGE_SIZE, 0) == -1){
-            printf("Client of id: %d has closed queue connection\n", clientID);
-            return;
-        }
+        processTimeCommand(msg);
     }    
     //End queue execution on END command or interruption command
     else if (msg->mtype == END || msg->mtype == INT){
-        printf("Received start message on server - END or INT\n");
-        exit(-1);        
+        printf("Received message on server - END or INT\n");
+        isServerActive = 0;        
     } 
     else if (msg->mtype == START){
-        activeClients++;
-        
-        key_t clientKey;
-        sscanf(msg->mtext, "%d", &clientKey);
-        int id = msgget(clientKey, 0);
-        clientConnectionIDs[activeClients] = id;
-        clientKeys[activeClients] = clientKey;
-
-        if (id <= 0){
-            printf("Failed to get correct id on start\n");
-            printf("errno: %s\n", strerror(errno));
-            exit(-1);
-        }
-        message newMsg;
-        newMsg.mtype = START;
-        newMsg.senderPID = getpid();
-        sprintf(newMsg.mtext, "%d", activeClients);
-
-        if (msgsnd(id, &newMsg, MESSAGE_SIZE, 0) == -1){
-            printf("Failed to send message to client\n");
-            printf("errno: %s\n", strerror(errno));
-            exit(-1);
-        }
+        processStartCommand(msg);
     } 
     else{
         printf("Received start message on server - Uknown type\n");
@@ -94,8 +119,8 @@ void processReceivedMessages(message *msg)
 
 void closeQueueAtExit()
 {
-    if (queueID != -1)
-    {
+    //Cleanup at exit
+    if (queueID != -1){
         if (msgctl(queueID, IPC_RMID, NULL) == -1){
             printf("Failed to delete queue at exit in server\n");        
         }
@@ -104,22 +129,24 @@ void closeQueueAtExit()
 
 void int_handler()
 {
+    //Cleanup at console interuption
     closeQueueAtExit();
     exit(-1);
 }
 
 int main(int argc, char* argv[])
 {
+    //Prepare atexit/signal for cleanup
     if (atexit(closeQueueAtExit) == -1){
         printf("Failed to create atexit function in server\n");
         return -1;
     }
-
     if (signal(SIGINT, int_handler) == SIG_ERR){
         printf("Failed to assign interruption function in server\n");
         return -1;
     }
 
+    //Create public queue to receive messages
     queueID = createServerQueue();
     if (queueID == -1){
         printf("Failed to create server queue\n");
@@ -127,10 +154,12 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    //Zero initialize structs
     struct msqid_ds state;
-    message msg;
+    struct message msg;
     while (1)
     {
+        //If preparing to shutdown - check if there are messages left
         if (!isServerActive)
         {
             if (msgctl(queueID, IPC_STAT, &state) == -1){
@@ -143,12 +172,8 @@ int main(int argc, char* argv[])
             }
         }
         
-
-        if (msgrcv(queueID, &msg, MESSAGE_SIZE, 0, 0) == -1){
-            // printf("Failed to receive message on server\n");
-            // exit(-1);
-        }
-        else{
+        //Process message if any received
+        if (msgrcv(queueID, &msg, MESSAGE_SIZE, 0, 0) != -1){
             processReceivedMessages(&msg);
         }
     }
