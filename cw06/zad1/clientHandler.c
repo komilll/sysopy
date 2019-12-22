@@ -2,9 +2,21 @@
 
 int desiredActions = 0;
 int performedActions = 0;
-pid_t currentChildPID = 0;
+pid_t currentChildPID = 1;
 int memID = -1;
 enum clientState state;
+
+void putClientToQueue()
+{
+    if (desiredActions > 0 && state == IDLE){
+        state = WAIT_IN_QUEUE;
+        struct sysinfo info;
+        sysinfo(&info);
+        struct timespec monotime;
+        clock_gettime(CLOCK_MONOTONIC, &monotime);
+        printf("%ld.%ld Client: sit in queue ~ %d\n", monotime.tv_sec, monotime.tv_nsec, getpid());
+    }
+}
 
 void createClient(int actions)
 {
@@ -18,10 +30,15 @@ void createClient(int actions)
         printf("Failed to create client\n");
         exit(-1);
     } else if (currentChildPID == 0){
-        
+        state = IDLE;
     } else{
         data = shmat(memID, NULL, 0);
-        data->clientPIDs[0] = currentChildPID;
+        if (data->clientsLeft == MAX_CLIENT_COUNT){
+            printf("Reached maximum number of clients to create\n");
+            exit(-1);
+        }
+        data->clientPIDs[data->clientsLeft] = currentChildPID;
+        data->clientsLeft++;
     }
 }
 
@@ -34,39 +51,81 @@ int main(int argc, char* argv[])
         exit(-1);
     }
 
-    createClient(1);
+    srand(getpid());
+    for (int i = 0; i < 10; i++) {
+        if (currentChildPID != 0){
+            createClient(1 + rand() % 5);
+            // createClient(2);
+        }
+    }
     data = shmat(memID, NULL, 0);
 
     struct sysinfo info;
     sysinfo(&info);
+    int continueLoop = 1;
 
-    while(1){
+    while(continueLoop){
         if (currentChildPID == 0){
             takeSemaphore(data->semID);
 
             struct timespec monotime;
-            clock_gettime(CLOCK_MONOTONIC, &monotime);            
+            clock_gettime(CLOCK_MONOTONIC, &monotime);
 
             switch (data->curBarberState){
                 case WAITING_TO_SIT:
-                    state = SIT_ON_CHAIR;
-                    printf("%ld Client: sit on chair\n", monotime.tv_nsec);
+                    if (state == WAIT_IN_QUEUE && getpid() == data->clientPIDs[0]){
+                        state = SIT_ON_CHAIR;
+                        printf("%ld.%ld Client: sit on chair ~ %d with %d shaves left\n", monotime.tv_sec, monotime.tv_nsec, getpid(), desiredActions - performedActions);
+                        data->curBarberState = SHAVING;
+                    } else {
+                        putClientToQueue();
+                    }
                     break;
-                case FINISHED_SHAVING:
-                    printf("%ld Client: leave barber\n", monotime.tv_nsec);
-                    data->curBarberState = CHECK_QUEUE;
-                    return 0;
+                case FINISHED_SHAVING:        
+                    //Perform action only on client which is sitting on chair         
+                    if (state == SIT_ON_CHAIR){
+                        performedActions++;
+                        if (desiredActions == performedActions){
+                            printf("%ld.%ld Client: leave barber ~ %d\n", monotime.tv_sec, monotime.tv_nsec, getpid());
+                            leaveQueue(memID);
+                            continueLoop = 0;
+                            state = IDLE;
+                        } else {
+                            //if (sitsLeft == 0) -> printf("leave barber due to full queue")                    
+                            printf("%ld.%ld Client: sit in queue ~ %d\n", monotime.tv_sec, monotime.tv_nsec, getpid());
+                            goAtQueueEnd(memID);
+                            state = WAIT_IN_QUEUE;
+                        }
+                        data->curBarberState = CHECK_QUEUE;
+                    } else {
+                        putClientToQueue();
+                    }
+                    break;               
                 case SLEEPING:
-                    state = SIT_ON_CHAIR;
-                    data->curBarberState = SHAVING;
-                    printf("%ld Client: sit on chair\n", monotime.tv_nsec);
+                    //Barber is sleeping only if there is no client on chair - safe to wake up and sit
+                    if (state == IDLE){
+                        state = SIT_ON_CHAIR;
+                        data->curBarberState = WAKING_UP;
+                        moveToQueueBeginning(memID, getpid());
+                        printf("%ld.%ld Client: wake up barber ~ %d\n", monotime.tv_sec, monotime.tv_nsec, getpid());
+                        printf("%ld.%ld Client: sit on chair ~ %d with %d shaves left\n", monotime.tv_sec, monotime.tv_nsec, getpid(), desiredActions - performedActions);
+
+                        // for (int i = 0; i < data->clientsLeft; i++){
+                        //     printf("Client: %d\n", data->clientPIDs[i]);  
+                        // } 
+                    }
                     break;
+
                 case SHAVING:
                 case CHECK_QUEUE:
                 default:
+                    putClientToQueue();
                     break;
             }
             giveSemaphore(data->semID);
+        } else if (data->clientsLeft == 0){
+            printf("\n ~ No clients left - end clientHandler process ~ \n");
+            return 0;
         }
     }
 

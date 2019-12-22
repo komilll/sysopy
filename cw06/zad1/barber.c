@@ -74,31 +74,35 @@ int main(int argc, char* argv[])
 
         struct timespec monotime;
         clock_gettime(CLOCK_MONOTONIC, &monotime);   
-
+        
         switch (data->curBarberState){
             case CHECK_QUEUE:
+                printf("%ld.%ld Barber: client count - %d\n", monotime.tv_sec, monotime.tv_nsec, data->clientsLeft);
+
                 if (data->clientsLeft == 0){
                     //Go to sleep
                     data->curBarberState = SLEEPING;
-                    printf("%ld Barber: go to sleep\n", monotime.tv_nsec);
+                    printf("%ld.%ld Barber: go to sleep\n", monotime.tv_sec, monotime.tv_nsec);
                 } else {
                     //Wait until client sit on chair
                     data->curBarberState = WAITING_TO_SIT;
-                    printf("%ld Barber: wait for client to sit", monotime.tv_nsec);
+                    printf("%ld.%ld Barber: invite client %d to sit\n", monotime.tv_sec, monotime.tv_nsec, data->clientPIDs[0]);
                 }
                 break;
 
-            case WAITING_TO_SIT:
-                data->curBarberState = SHAVING;                             
+            case WAKING_UP:
+                printf("%ld.%ld Barber: waking up\n", monotime.tv_sec, monotime.tv_nsec);
+                data->curBarberState = SHAVING;
                 break;
 
             case SHAVING:
-                printf("%ld Barber: start shaving\n", monotime.tv_nsec);
+                printf("%ld.%ld Barber: start shaving client %d\n", monotime.tv_sec, monotime.tv_nsec, data->clientPIDs[0]);
                 //Call Shaving() function
-                printf("%ld Barber: end shaving\n", monotime.tv_nsec);
+                printf("%ld.%ld Barber: end shaving client %d\n", monotime.tv_sec, monotime.tv_nsec, data->clientPIDs[0]);
                 data->curBarberState = FINISHED_SHAVING;
                 break;
 
+            case WAITING_TO_SIT:
             case SLEEPING:
             case FINISHED_SHAVING:
             default:
