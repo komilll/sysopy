@@ -9,8 +9,11 @@ all:
 	$(CC) $(BARBER_C_NAME) -o $(BARBER_O_NAME)
 	$(CC) $(CLIENT_C_NAME) -o $(CLIENT_O_NAME)
 
-test: clean all
+test_barber: clean all
 	./$(BARBER_O_NAME)
+
+test_client:
+	./$(CLIENT_O_NAME)
 
 clean:
 	rm -f *.o *.a *.so *.s $(BARBER_O_NAME)
