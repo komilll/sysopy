@@ -30,10 +30,10 @@ void putClientToQueue()
 void createClient(int actions)
 {
     //Set how many shaves client want
-    desiredActions = actions;
-    if (desiredActions == 0){
+    if (actions == 0){
         return;
     }
+    desiredActions = actions;
 
     //Create client process
     currentChildPID = fork();
@@ -49,11 +49,7 @@ void createClient(int actions)
         if (data->clientsLeft == MAX_CLIENT_COUNT){
             return;
         }
-        if (currentChildPID == getpid()){
-            return;
-        }
         data->clientPIDs[data->clientsLeft] = currentChildPID;
-        printf("Child id: %d\n", currentChildPID);
         data->clientsLeft++;
     }
 }
@@ -75,7 +71,9 @@ int main(int argc, char* argv[])
         int shaveCount = atoi(argv[2]);
         //Create clients with same shave number
         for (int i = 0; i < clientsCount; i++) {
-            createClient(shaveCount);
+            if (currentChildPID != 0){
+                createClient(shaveCount);
+            }
         }
     } else if (argc == 2 || argc == 1){
         if (argc == 2){

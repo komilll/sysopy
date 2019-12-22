@@ -16,4 +16,4 @@ test_client:
 	./$(CLIENT_O_NAME)
 
 clean:
-	rm -f *.o *.a *.so *.s $(BARBER_O_NAME)
+	rm -f *.o *.a *.so *.s $(BARBER_O_NAME) $(CLIENT_O_NAME)
