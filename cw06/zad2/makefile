@@ -1,13 +1,19 @@
-CC = gcc -Wall -std=gnu11 -O3
-FILE_C_NAME = main.c
-FILE_O_NAME = main
-FILE_S_NAME = main.s
+CC = gcc -Wall -std=gnu11 -O3 -lpthread -lrt
+BARBER_C_NAME = barber.c
+BARBER_O_NAME = barber
+
+CLIENT_C_NAME = clientHandler.c
+CLIENT_O_NAME = clientHandler
 
 all:
-	$(CC) $(FILE_C_NAME) -o $(FILE_O_NAME)
+	$(CC) $(BARBER_C_NAME) -o $(BARBER_O_NAME)
+	$(CC) $(CLIENT_C_NAME) -o $(CLIENT_O_NAME)
 
-test: clean all
-	./$(FILE_O_NAME)
+test_barber: clean all
+	./$(BARBER_O_NAME)
+
+test_client:
+	./$(CLIENT_O_NAME)
 
 clean:
-	rm -f *.o *.a *.so *.s $(FILE_O_NAME)$(TEST_FILE) $(TEST_FILE_SYM)
+	rm -f *.o *.a *.so *.s $(BARBER_O_NAME) $(CLIENT_O_NAME)
