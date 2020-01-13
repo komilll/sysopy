@@ -6,6 +6,7 @@
 #include <sys/sysinfo.h>
 #include <time.h>
 #include <pthread.h>
+#include <string.h>
 
 #define MAX_CONFIG_FILENAME_LENGTH 255
 #define MAX_LINE_LENGTH 1000
@@ -41,6 +42,23 @@ int c_index = 0;
 int isWorking = 1;
 
 //////////////////////
+
+int isEmptyLine(char* line)
+{
+    if (strlen(line) == 0){
+        return 1;
+    }
+    for (int i = 0; i < MAX_LINE_LENGTH; ++i){
+        if (line[i] == '\0' || line[i] == 10){
+            return 1;
+        }
+        if (line[i] != ' '){
+            // printf("Line #%d: %d\n", i, line[i]);
+            return 0;
+        }
+    }
+    return 1;
+}
 
 void readConfigurationFile(char* filename)
 {
@@ -92,7 +110,7 @@ void* producerFunc()
         pthread_mutex_lock(p_mutex);
 
         while (buffer[p_index] != NULL)
-            pthread_cond_wait(&w_cond, &p_mutex);
+            pthread_cond_wait(&w_cond, p_mutex);
 
         currentIndex = p_index;
         pthread_mutex_lock(&b_mutex[currentIndex]);
@@ -111,6 +129,34 @@ void* producerFunc()
 
 void* consumerFunc()
 {
+    int currentIndex = 0;
+    char *line;
+    while (1){  
+        pthread_mutex_lock(c_mutex);
+
+        while(buffer[c_index] == NULL){
+            if (!isWorking){
+                pthread_mutex_unlock(c_mutex);
+                return NULL;
+            }
+            pthread_cond_wait(&r_cond, c_mutex);
+        }
+
+        currentIndex = c_index;
+        pthread_mutex_lock(&b_mutex[currentIndex]);
+        line = buffer[currentIndex];
+        if (!isEmptyLine(line) && strlen(line) < L){
+            printf("%s\n", line);
+        }
+        buffer[currentIndex] = NULL;
+        free(line);
+        c_index = (c_index + 1) % N;
+        pthread_mutex_unlock(&b_mutex[currentIndex]);
+        pthread_cond_broadcast(&w_cond);
+        pthread_mutex_unlock(c_mutex);
+        usleep(10);
+    }
+
     return NULL;
 }
 
@@ -124,6 +170,45 @@ void runThreads()
     }
 }
 
+void joinThreads()
+{
+    for (int i = 0; i < P; ++i){
+        pthread_join(p_threads[i], NULL);
+    }
+    isWorking = 0;
+    pthread_cond_broadcast(&r_cond);
+    for (int i = 0; i < K; ++i){
+        pthread_join(c_threads[i], NULL);
+    }
+}
+
+void cleanup()
+{
+    return;
+    if (mainFile){
+        fclose(mainFile);
+    }
+
+    for (int i = 0; i < N; ++i){
+        if (buffer[i]){
+            free(buffer[i]);
+        }
+        free(buffer);
+    }
+
+    for (int i = 0; i < N; ++i){
+        pthread_mutex_destroy(&b_mutex[i]);
+    }
+    free(b_mutex);
+    pthread_mutex_destroy(c_mutex);
+    // free(c_mutex);
+    pthread_mutex_destroy(p_mutex);
+    // free(p_mutex);
+
+    pthread_cond_destroy(&r_cond);
+    pthread_cond_destroy(&w_cond);
+}
+
 int main(int argc, char* argv[])
 {
     if (argc != 2){
@@ -135,6 +220,10 @@ int main(int argc, char* argv[])
     initialize();
 
     runThreads();
+
+    joinThreads();
+
+    cleanup();
 
     return 0;
 }
