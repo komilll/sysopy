@@ -7,7 +7,7 @@ all:
 	$(CC) $(FILE_C_NAME) -o $(FILE_O_NAME)
 
 test: clean all
-	./$(FILE_O_NAME)
+	./$(FILE_O_NAME) config
 
 clean:
 	rm -rf *.o *.a *.so *.s $(FILE_O_NAME)

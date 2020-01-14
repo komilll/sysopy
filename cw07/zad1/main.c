@@ -48,6 +48,12 @@ void sigHandler(int signo)
     if (signo != SIGINT && signo != SIGALRM){
         return;
     }
+    for (int i = 0; i < P; ++i){
+        pthread_cancel(p_threads[i]);
+    }
+    for (int i = 0; i < K; ++i){
+        pthread_cancel(c_threads[i]);
+    }
     printf("Correctly interrupted program execution\n");
     exit(0);
 }
