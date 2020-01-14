@@ -8,7 +8,7 @@
 
 ![taiga_smile.gif](taiga_smile.gif)
 
-Ostatni gif dedykuję całości tego całego przedmiotu (w dużej mierze odnosi się dalej do ćwiczenia). To była piękna przygoda. Cieszę się, jeśli komukolwiek pomogły moje wpisy. Trzymajcie się mordeczki.
+Ostatni gif dedykuję całości tego przedmiotu (w dużej mierze odnosi się dalej do ćwiczenia). To była piękna przygoda. Cieszę się, jeśli komukolwiek pomogły moje wpisy. Trzymajcie się mordeczki.
 
 <h1>Zadania - Zestaw 7</h1>
 
