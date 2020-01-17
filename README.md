@@ -13,6 +13,13 @@ Siema chińskobajkowe świry!
   <li>https://github.com/ixf/sysopy
 </ul>
 
+<b>Kolokwia z poprzednich lat</b>:
+<ul>
+  <li>https://github.com/jakubowiczish/sysopy
+  <li>https://github.com/Ajris/sysopy
+  <li>https://github.com/Malenczuk/SysOpy
+</ul>
+
 <h3>Zapraszam!</h3>
 
 ![welcome.gif](welcome.gif)
